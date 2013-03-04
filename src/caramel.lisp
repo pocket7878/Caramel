@@ -4,9 +4,12 @@
 |#
 
 (in-package :cl-user)
+
 (defpackage caramel
   (:use :cl :css :buildnode)
   (:export
+    #:->
+    #:do->
     #:content
     #:set-attr
     #:remove-attr
@@ -82,6 +85,15 @@
   (loop for n in node-list
         collect (funcall fn n)))
 
+(defmacro do-> (node &rest trans)
+  `(progn
+     ,@(loop for tra in trans
+             collect
+             (typecase tra
+               (symbol  `(,tra ,node))
+               (atom    `(,tra ,node))
+               (list    `(,(car tra) ,node ,@(cdr tra)))))))
+
 (defmacro deftemplate (name file-path args &rest select-body-pair)
   (let ((dom (gensym))
         (st (gensym)))
@@ -91,10 +103,12 @@
                  for selector = (car sbp)
                  for code = (cdr sbp)
                  collect
-                 `(-> (select ,selector ,dom) ,code))
+                 `(loop for node in (select ,selector ,dom)
+                        do
+                        (do-> node ,code)))
          (let ((*html-compatibility-mode* t))
              (document-to-string ,dom))))))
 
 (deftemplate hoge #p"/home/masato/Desktop/test.html" (moge)
-    "#hoge" (-> first (content "fuge"))
-    "h1" (-> first (content "Yahoo!!")))
+    "#hoge" (do-> (content "fuge") (set-attr "color" "pi"))
+    "h1" (content "Yahoo!!"))
