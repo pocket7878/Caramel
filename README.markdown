@@ -48,7 +48,13 @@ Remove css classes from node
 
 Set content of node
 
-    (content node "foo")
+    (content node "foo" a-node "foo")
+
+#### html-content
+
+Build html from specified string and set
+
+    (html-content node "<p>Foo</p>")
 
 
 #### do->
