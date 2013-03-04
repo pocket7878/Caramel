@@ -77,13 +77,9 @@
   (apply #'vector list))
 
 (defun content (node &rest value)
-  (setf (slot-value node 'rune-dom::children) (rune-dom::make-node-list))
+  (setf (slot-value node 'cxml-dom::children) (cxml-dom::make-node-list))
   ;;Insert nodes
   (apply (lambda (x) (insert-children node 0 x)) value))
-
-(defun clone-for (node-list fn)
-  (loop for n in node-list
-        collect (funcall fn n)))
 
 (defmacro do-> (node &rest trans)
   `(progn
@@ -109,6 +105,8 @@
          (let ((*html-compatibility-mode* t))
              (document-to-string ,dom))))))
 
+#|
 (deftemplate hoge #p"/home/masato/Desktop/test.html" (moge)
-    "#hoge" (do-> (content "fuge") (set-attr "color" "pi"))
+    "#hoge" (do-> (content "fuge") (set-attr :color moge) (add-class "new-fuge"))
     "h1" (content "Yahoo!!"))
+|#
