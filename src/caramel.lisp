@@ -91,6 +91,15 @@
    ;;Insert nodes
    (apply (lambda (x) (insert-children node 0 x)) value)))
 
+(defun html-content (node html-str)
+  (with-clone-node node node
+   (setf (slot-value node 'cxml-dom::children) (cxml-dom::make-node-list))
+   (let ((*document* (buildnode::document-of node)))
+     (loop for nnode across (dom:child-nodes (inner-html html-str))
+           do
+           (add-children node nnode)))
+   node))
+
 (defmacro do-> (node &rest trans)
   `(progn
      ,@(loop for tra in trans
@@ -156,8 +165,7 @@
                         (replace-node-with node (do-> node ,code))))
          (dom-to-html-string ,dom)))))
 
-#|
 (deftemplate hoge #p"/home/masato/Desktop/test.html" (moge)
-             "#hoge" (clone-for x '(1 2 3) (content x))
+             "#hoge" (clone-for x '(1 2 3) (html-content 
+                                             (format nil "<span>~A</span>" x)))
              "h1" (content "Yahoo!!"))
-|#
