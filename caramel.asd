@@ -17,6 +17,7 @@
   :author "Masato Sogame"
   :license "LLGPL"
   :depends-on (:cxml
+               :iterate
                :cxml-dom
                :closure-html
                :css-selectors

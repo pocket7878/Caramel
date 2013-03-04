@@ -57,6 +57,16 @@ Cascade transform to node
 
     (do-> node (content "foo") (set-attr :color "green") (add-class "cls-foo"))
 
+#### clone-for
+
+Clone nodes
+
+    (clone-for node x '(1 2 3) (content x))
+    
+    (clone-for node x '(1 2 3)
+                   "p" (content x)
+                   "h1" (content "foo"))
+
 #### deftemplate
 
 Define template from file.
