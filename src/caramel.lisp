@@ -165,10 +165,3 @@
                         do
                         (replace-node-with node (do-> node ,code))))
          (dom-to-html-string ,dom)))))
-
-#|
-(deftemplate hoge #p"/home/masato/Desktop/test.html" (moge)
-             "#hoge" (clone-for x '(1 2 3) (html-content 
-                                             (format nil "<span>~A</span>" x)))
-             "h1" (content "Yahoo!!"))
-|#
