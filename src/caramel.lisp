@@ -256,6 +256,3 @@
                                do
                                (replace-node-with ,ns (funcall ,code ,ns))))
                 collect ,n)))))
-
-(deftemplate hoge #p"/home/masato/Desktop/test.html" ()
-   "h1" (substitute (foo)))
