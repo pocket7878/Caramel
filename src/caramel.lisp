@@ -20,6 +20,7 @@
     #:remove-class
     #:html-resource
     #:select
+    #:defsnippet
     #:deftemplate))
 (in-package :caramel)
 
@@ -48,7 +49,9 @@
         if (stringp node)
         collect (dom:create-text-node doc node)
         else
-        collect node))
+        collect (progn 
+                 (setf (slot-value node 'cxml-dom::owner) doc)
+                 node)))
         
 (defun group (list)
   (labels ((%group (acc list)
@@ -234,3 +237,25 @@
                         do
 		       (replace-node-with node (funcall  ,code node))))
          (dom-to-html-string ,dom)))))
+
+(defmacro defsnippet (name file-path selector args &rest select-trans-pair)
+  (let ((dom (gensym))
+        (st (gensym))
+        (n (gensym))
+        (ns (gensym)))
+    `(defun ,name ,args
+       (let* ((,dom (html-resource ,file-path))
+              (,st (select ,selector ,dom)))
+         (loop for ,n in ,st
+                do
+                ,@(loop for sbp in (group select-trans-pair)
+                        for selector = (car sbp)
+                        for code = (cdr sbp)
+                        collect
+                        `(loop for ,ns in (select ,selector ,n)
+                               do
+                               (replace-node-with ,ns (funcall ,code ,ns))))
+                collect ,n)))))
+
+(deftemplate hoge #p"/home/masato/Desktop/test.html" ()
+   "h1" (substitute (foo)))
