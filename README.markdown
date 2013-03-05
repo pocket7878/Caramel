@@ -4,112 +4,121 @@ Enlive like template system in Common Lisp
 
 ## Usage
 
-#### html-resource
+### html-resource
 
 build dom from html file
 
     (html-resource #p"/path/to/your/html/file")
 
-#### select
+### select
 
 search node by css selector
 
     (select "#id" dom-node)
     => Matching node list 
 
+### Translator
+
+Every translator returns a function 
+which takes a node and return translated node or nodes.
 
 #### set-attr
 
 Set attributes to node
 
-    (set-attr node :foo "baz" :bar "wow")
+    (set-attr :foo "baz" :bar "wow")
 
 #### remove-attr
 
 Remove attributes from node
 
-    (remove-attr node :foo :bar)
+    (remove-attr :foo :bar)
 
 
 #### add-class
 
 Add css classes to node
 
-    (add-class node "cls-foo" "cls-bar")
+    (add-class "cls-foo" "cls-bar")
 
 #### remove-class
 
 Remove css classes from node
 
-    (remove-class node "cls-foo" "cls-bar")
+    (remove-class "cls-foo" "cls-bar")
 
 
 #### content
 
 Set content of node
 
-    (content node "foo" a-node "foo")
+    (content "foo" a-node "foo")
 
 #### html-content
 
 Build html from specified string and set
 
-    (html-content node "<p>Foo</p>")
+    (html-content "<p>Foo</p>")
 
-
-#### do->
-
-Cascade transform to node
-
-    (do-> node (content "foo") (set-attr :color "green") (add-class "cls-foo"))
 
 #### wrap
 
 Wrap node with specified tag
 
-    (wrap node "p")
+    (wrap "p")
 
 #### unwrap
 
 Get content of node
 
-    (unwrap node)
+    (unwrap)
+
+#### do->
+
+Cascade transform to node
+
+    (do-> (content "foo") (set-attr :color "green") (add-class "cls-foo"))
 
 #### before
 
 Insert nodes before node
     
-    (before node "foo" a-node "baz")
+    (before "foo" a-node "baz")
 
 #### after
 
 Insert nodes after node
 
-    (after node "foo" a-node "baz")
+    (after "foo" a-node "baz")
 
 #### substitute
     
 Replace node with nodes
 
-    (substitute node "foo" a-node "baz")
+    (substitute "foo" a-node "baz")
 
 #### clone-for
 
 Clone nodes
 
-    (clone-for node x '(1 2 3) (content x))
+    (clone-for x '(1 2 3) (content x))
     
-    (clone-for node x '(1 2 3)
-                   "p" (content x)
-                   "h1" (content "foo"))
+    (clone-for x '(1 2 3)
+     "p" (content x)
+     "h1" (content "foo"))
 
 #### deftemplate
 
 Define template from file.
 
-    (deftemplate foo #p"/path/to/your/base/file" (bar)
-      "#bar" (do-> (content "fuge") (set-attr :color "green") (add-class "cls-foo"))
-      "p#para" (content "Wow"))
+    (deftemplate foo #p"/path/to/your/base/file" (&optional foo)
+      "#bar" (do-> 
+              (content "fuge") 
+              (set-attr :color "green") 
+              (add-class "cls-foo"))
+      "p#para" (if foo
+                 (content foo)
+                 (content "defaul")))
 
 ## Author
 
