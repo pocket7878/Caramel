@@ -111,11 +111,11 @@ Clone nodes
 
 Define snippet from file.
 
-   (defsnippet bar #p"/path/to/your/file" "div#baz" ()
+    (defsnippet bar #p"/path/to/your/file" "div#baz" ()
       "p" (content "foo"))
 
-   (bar)
-   => node-list
+    (bar)
+    => node-list
       
 #### deftemplate
 
