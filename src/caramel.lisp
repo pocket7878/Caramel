@@ -42,6 +42,13 @@
   `(let ((,var (dom:clone-node ,node t)))
      ,@body))
 
+(defun treat-node-list (doc node-list)
+  (loop for node in node-list
+        if (stringp node)
+        collect (dom:create-text-node doc node)
+        else
+        collect node))
+        
 (defun group (list)
   (labels ((%group (acc list)
              (if (null list)
@@ -120,8 +127,6 @@
                (atom    `(,tra ,node))
                (list    `(,(car tra) ,node ,@(cdr tra)))))))
 
-
-
 (defmacro apply-select-trans (node select trans)
   (let ((n (gensym)))
     `(progn
@@ -129,6 +134,19 @@
              collect
              (do-> ,n ,trans))
        ,node)))
+
+(defmacro before (&rest nodes)
+  (let ((node (gensym)))
+    `(lambda (node)
+       `(,@(treat-node-list (buildnode::document-of node) nodes) ,node)))
+
+(defun after (node &rest nodes)
+  (with-clone-node node node
+  `(,node ,@(treat-node-list (buildnode::document-of node) nodes))))
+
+(defun subsititute (node &rest nodes)
+  (with-clone-node node node
+           (treat-node-list (buildnode::document-of node) nodes)))
 
 (defmacro clone-for (node var lst &rest trans)
   (cond 
@@ -175,3 +193,6 @@
                         do
                         (replace-node-with node (do-> node ,code))))
          (dom-to-html-string ,dom)))))
+
+(deftemplate hoge #p"/home/masato/Desktop/test.html" ()
+  "#hoge" (before "foo" "baz"))

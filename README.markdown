@@ -75,6 +75,24 @@ Get content of node
 
     (unwrap node)
 
+#### before
+
+Insert nodes before node
+    
+    (before node "foo" a-node "baz")
+
+#### after
+
+Insert nodes after node
+
+    (after node "foo" a-node "baz")
+
+#### substitute
+    
+Replace node with nodes
+
+    (substitute node "foo" a-node "baz")
+
 #### clone-for
 
 Clone nodes
