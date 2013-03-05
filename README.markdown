@@ -97,6 +97,18 @@ Replace node with nodes
 
     (substitute "foo" a-node "baz")
 
+#### append
+
+Append the values to the content of node
+
+    (append "foo" "bar" a-node)
+
+#### prepend
+
+Prepend the values to the content of node
+
+    (prepend "foo" "bar" a-node)
+
 #### clone-for
 
 Clone nodes
