@@ -7,7 +7,7 @@
 
 (defpackage caramel
   (:use :cl :alexandria :css :buildnode :iterate)
-  (:shadow :substitute)
+  (:shadow :substitute :append :prepend)
   (:export
     #:->
     #:do->
@@ -159,6 +159,24 @@
   (lambda (node)
     nodes))
 
+(defun prepend (&rest nodes)
+  (lambda (node)
+    (with-clone-node node node
+      (loop for nnode in (treat-node-list
+                           (buildnode::document-of node) nodes)
+            do
+            (insert-children node 0 nnode))
+      node)))
+
+(defun append (&rest nodes)
+  (lambda (node)
+    (with-clone-node node node
+        (loop for nnode in (treat-node-list 
+                             (buildnode::document-of node) nodes)
+              do
+              (add-children node nnode))
+        node)))
+
 (defun flatmap (fn node-or-nodes)
   (flatten (mapcar fn (ensure-list node-or-nodes))))
 
@@ -216,4 +234,3 @@
                         do
 		       (replace-node-with node (funcall  ,code node))))
          (dom-to-html-string ,dom)))))
-
