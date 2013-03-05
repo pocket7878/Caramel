@@ -107,7 +107,9 @@ Clone nodes
      "p" (content x)
      "h1" (content "foo"))
 
-#### defsnippet
+## Snippet & Template 
+
+### defsnippet
 
 Define snippet from file.
 
@@ -117,7 +119,7 @@ Define snippet from file.
     (bar)
     => node-list
       
-#### deftemplate
+### deftemplate
 
 Define template from file.
 
