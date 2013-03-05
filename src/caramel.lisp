@@ -6,7 +6,7 @@
 (in-package :cl-user)
 
 (defpackage caramel
-  (:use :cl :css :buildnode :iterate)
+  (:use :cl :alexandria :css :buildnode :iterate)
   (:export
     #:->
     #:do->
@@ -135,18 +135,17 @@
              (do-> ,n ,trans))
        ,node)))
 
-(defmacro before (&rest nodes)
-  (let ((node (gensym)))
-    `(lambda (node)
-       `(,@(treat-node-list (buildnode::document-of node) nodes) ,node)))
+(defun before (node-or-nodes &rest nodes)
+  (flatten (concatenate 'list nodes 
+                        (ensure-list node-or-nodes))))
 
-(defun after (node &rest nodes)
-  (with-clone-node node node
-  `(,node ,@(treat-node-list (buildnode::document-of node) nodes))))
+(defun after (node-or-nodes &rest nodes)
+  (flatten (concatenate 'list 
+                        (ensure-list node-or-nodes)
+                        nodes)))
 
 (defun subsititute (node &rest nodes)
-  (with-clone-node node node
-           (treat-node-list (buildnode::document-of node) nodes)))
+  nodes)
 
 (defmacro clone-for (node var lst &rest trans)
   (cond 
@@ -167,13 +166,18 @@
                       
 (defmethod replace-node-with ((old-node dom:node) node-or-nodes)
   (cond ((listp node-or-nodes)
+         (setf node-or-nodes (treat-node-list (buildnode::document-of old-node) (flatten node-or-nodes)))
          (loop for nnode in node-or-nodes
                do
+               (when (eq nnode old-node)
+                 (setf nnode (dom:clone-node nnode t)))
                (dom:insert-before (dom:parent-node old-node) 
                                   nnode
                                   old-node))
          (dom:remove-child (dom:parent-node old-node) old-node))
         (t
+         (when (eq node-or-nodes old-node)
+           (setf node-or-nodes (dom:clone-node nnode t)))
          (dom:replace-child (dom:parent-node old-node) node-or-nodes old-node))))
          
 (defun dom-to-html-string (dom)
@@ -193,6 +197,3 @@
                         do
                         (replace-node-with node (do-> node ,code))))
          (dom-to-html-string ,dom)))))
-
-(deftemplate hoge #p"/home/masato/Desktop/test.html" ()
-  "#hoge" (before "foo" "baz"))
