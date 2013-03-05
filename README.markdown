@@ -63,6 +63,18 @@ Cascade transform to node
 
     (do-> node (content "foo") (set-attr :color "green") (add-class "cls-foo"))
 
+#### wrap
+
+Wrap node with specified tag
+
+    (wrap node "p")
+
+#### unwrap
+
+Get content of node
+
+    (unwrap node)
+
 #### clone-for
 
 Clone nodes

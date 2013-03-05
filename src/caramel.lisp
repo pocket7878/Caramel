@@ -101,6 +101,16 @@
            (add-children node nnode)))
    node))
 
+(defun wrap (node &optional (tag "div"))
+  (with-clone-node node node
+    (let* ((*document* (buildnode::document-of node))
+           (nnode (dom:create-element *document* tag)))
+      (add-children nnode node)
+      nnode)))
+
+(defun unwrap (node)
+  (dom:child-nodes node))
+
 (defmacro do-> (node &rest trans)
   `(progn
      ,@(loop for tra in trans
