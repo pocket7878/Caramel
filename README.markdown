@@ -107,6 +107,16 @@ Clone nodes
      "p" (content x)
      "h1" (content "foo"))
 
+#### defsnippet
+
+Define snippet from file.
+
+   (defsnippet bar #p"/path/to/your/file" "div#baz" ()
+      "p" (content "foo"))
+
+   (bar)
+   => node-list
+      
 #### deftemplate
 
 Define template from file.
