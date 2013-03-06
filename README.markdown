@@ -97,6 +97,12 @@ Replace node with nodes
 
     (substitute "foo" a-node "baz")
 
+#### move
+
+Move matched node
+
+    (move src-selector dst-selector)
+
 #### clone-for
 
 Clone nodes

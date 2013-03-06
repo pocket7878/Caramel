@@ -25,6 +25,7 @@
     #:remove-attr
     #:add-class
     #:remove-class
+    #:move
     #:clone-for
     #:do->
     ;; templating
@@ -218,6 +219,19 @@
               (add-children node nnode))
         node)))
 
+(defun move (src-selector dst-selector)
+  (lambda (node)
+    (with-clone-node node node
+        (let ((snodes (select src-selector node))
+              (dnodes (select dst-selector node)))
+          (loop for dnode in dnodes
+                do
+                (replace-node-with dnode 
+                   (flatmap (lambda (x) (dom:clone-node x t)) snodes)))
+          (loop for snode in snodes
+                do
+                (dom:remove-child (dom:parent-node snode) snode)))
+        node)))
 
 (defmacro clone-for (var lst &rest trans)
   (let ((node (gensym)))
