@@ -9,6 +9,11 @@
   (:use :cl :alexandria :css :buildnode :iterate)
   (:shadow :substitute :append :prepend)
   (:export
+    #:before
+    #:after
+    #:append
+    #:prepend
+    #:substitute
     #:do->
     #:clone-for
     #:content
