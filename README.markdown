@@ -132,6 +132,53 @@ Define template from file.
                  (content foo)
                  (content "defaul")))
 
+## Scraping
+
+### get-attr
+
+Get attribute value of node
+
+    (get-attr node name)
+
+### get-attrs
+
+Get attribute alist of node
+
+    (get-attrs node)
+
+#### example
+
+        (defun -> (&rest fns)
+         (lambda (init)
+          (loop with citem = init
+           for fn in fns
+           do
+           (setf citem (funcall fn citem))
+           finally (return citem))))
+
+        (defun google-search (word)
+           (let* ((query (list (cons "q" word)))
+                  (str (drakma:http-request "http://www.google.com/search"
+                                      :parameters query))
+                  (dom (html-resource str)))
+                (loop 
+                   for node in (select "h3.r" dom)
+                   collect (get-attr (funcall (-> (unwrap) #'first) node) "href"))))
+
+        (google-search "foo")
+        =>
+        ("/url?q=http://en.wikipedia.org/wiki/Foobar&sa=U&ei=Oas2UZrOFoyIkwXot4C4Cw&ved=0CBgQFjAA&usg=AFQjCNENNqcYY0yw8Y9RKmzildDpcRlcSg"
+         "/url?q=http://www.foo.com/&sa=U&ei=Oas2UZrOFoyIkwXot4C4Cw&ved=0CCEQFjAB&usg=AFQjCNEi6s8gBpsT6sK5Em5Rq-zpL6v01w"
+         "/url?q=http://www.urbandictionary.com/define.php%3Fterm%3Dfoo&sa=U&ei=Oas2UZrOFoyIkwXot4C4Cw&ved=0CCUQFjAC&usg=AFQjCNFC3xe17h6LLn86ZXUtY4CXfCcOwQ"
+         "/url?q=http://catb.org/jargon/html/F/foo.html&sa=U&ei=Oas2UZrOFoyIkwXot4C4Cw&ved=0CCkQFjAD&usg=AFQjCNFmr2ssHlV9Sjrrq833Rz8TjsDSFQ"
+         "/url?q=http://foofood.ca/&sa=U&ei=Oas2UZrOFoyIkwXot4C4Cw&ved=0CCwQFjAE&usg=AFQjCNFVHsem3EcurfHqsByEIR70wJ0vNA"
+         "/url?q=http://www.foofighters.com/&sa=U&ei=Oas2UZrOFoyIkwXot4C4Cw&ved=0CC8QFjAF&usg=AFQjCNFgY5a73m8zvOltlo1SeHm3h0asUw"
+         "/url?q=http://www.forgetfoo.com/&sa=U&ei=Oas2UZrOFoyIkwXot4C4Cw&ved=0CDMQFjAG&usg=AFQjCNFHZEG0pjLC-fwDNKPOv6MZu4Y4qQ"
+         "/url?q=http://www.foo-apartment.com/&sa=U&ei=Oas2UZrOFoyIkwXot4C4Cw&ved=0CDgQFjAH&usg=AFQjCNHkIFr_2j-KtvcHPxWd-XMhLudjcQ"
+         "/url?q=http://www.facebook.com/foofighters&sa=U&ei=Oas2UZrOFoyIkwXot4C4Cw&ved=0CDwQFjAI&usg=AFQjCNE-mJsSRMzQUdMOXjPToJljjmVeFg"
+         "/url?q=http://www.ietf.org/rfc/rfc3092.txt&sa=U&ei=Oas2UZrOFoyIkwXot4C4Cw&ved=0CEAQFjAJ&usg=AFQjCNFYfQd6aQqdZy9M5W4lzgTkosaniA")
+
+
 ## Author
 
 * Masato Sogame (poketo7878@gmail.com)

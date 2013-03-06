@@ -9,12 +9,13 @@
   (:use :cl :alexandria :css :buildnode :iterate)
   (:shadow :substitute :append :prepend)
   (:export
-    #:->
     #:do->
     #:clone-for
     #:content
     #:html-content
     #:set-attr
+    #:get-attrs
+    #:get-attr
     #:remove-attr
     #:add-class
     #:remove-class
@@ -29,16 +30,6 @@
 
 (defun select (selector node)
   (query selector node))
-
-(defmacro -> (exp &rest rest)
-  (if rest
-    (let ((fst (car rest))
-          (rest (cdr rest)))
-      (typecase fst
-        (symbol  `(-> (,fst ,exp) ,@rest))
-        (atom  `(-> (,fst ,exp) ,@rest))
-        (list `(-> (,(car fst) ,exp ,@(cdr fst)) ,@rest))))
-    exp))
 
 (defmacro with-clone-node (var node &body body)
   `(let ((,var (dom:clone-node ,node t)))
@@ -74,13 +65,24 @@
 			    finally (return node))
 			 (error "malformed atters")))))
 
+(defun get-attrs (node)
+  (loop for attr-node in (slot-value (dom:attributes node)
+                                 'cxml-dom::items)
+        collect
+        (cons
+          (dom:node-name attr-node)
+          (dom:value attr-node))))
+
+(defun get-attr (node name)
+  (get-attribute node name))
+
 (defun remove-attr (&rest atters)
   (lambda (node)
     (with-clone-node node node
-		     (loop for att in atters
-			do
-			  (remove-atter node att))
-		     node)))
+     (loop for att in atters
+        do
+          (remove-attr node att))
+     node)))
 
 (defun add-class (&rest class)
   (lambda (node)
