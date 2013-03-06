@@ -146,6 +146,15 @@ Get attribute alist of node
 
     (get-attrs node)
 
+### get-content
+
+Get content of node
+
+    (get-content text-node)
+    => content string
+    (get-content document-or-element)
+    => children-list
+
 #### example
 
         (defun -> (&rest fns)

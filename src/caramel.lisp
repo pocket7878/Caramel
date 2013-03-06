@@ -9,33 +9,37 @@
   (:use :cl :alexandria :css :buildnode :iterate)
   (:shadow :substitute :append :prepend)
   (:export
+    ;; resource
+    #:html-resource
+    ;; selector
+    #:select
+    ;; translator
+    #:content
+    #:html-content
     #:before
     #:after
     #:append
     #:prepend
     #:substitute
-    #:do->
-    #:clone-for
-    #:content
-    #:html-content
     #:set-attr
-    #:get-attrs
-    #:get-attr
     #:remove-attr
     #:add-class
     #:remove-class
-    #:html-resource
-    #:select
+    #:clone-for
+    #:do->
+    ;; templating
     #:defsnippet
-    #:deftemplate))
+    #:deftemplate
+    ;; scraping
+    #:get-attrs
+    #:get-attr
+    #:get-content
+    ))
 (in-package :caramel)
 
-(defun html-resource (input)
-  (chtml:parse input (cxml-dom:make-dom-builder)))
-
-(defun select (selector node)
-  (query selector node))
-
+;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Utility
+;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro with-clone-node (var node &body body)
   `(let ((,var (dom:clone-node ,node t)))
      ,@body))
@@ -58,6 +62,53 @@
                  (cddr list)))))
     (%group '() list)))
 
+(defun dom-to-html-string (dom)
+  (let ((*html-compatibility-mode* t))
+    (document-to-string dom)))
+
+(defmethod replace-node-with ((old-node dom:node) node-or-nodes)
+  (cond ((listp node-or-nodes)
+         (setf node-or-nodes (treat-node-list (buildnode::document-of old-node) (flatten node-or-nodes)))
+         (loop for nnode in node-or-nodes
+               do
+               (when (eq nnode old-node)
+                 (setf nnode (dom:clone-node nnode t)))
+               (dom:insert-before (dom:parent-node old-node) 
+                                  nnode
+                                  old-node))
+         (dom:remove-child (dom:parent-node old-node) old-node))
+        (t
+         (when (eq node-or-nodes old-node)
+           (setf node-or-nodes (dom:clone-node nnode t)))
+         (dom:replace-child (dom:parent-node old-node) node-or-nodes old-node))))
+
+(defmacro apply-select-trans (node select trans)
+  (let ((n (gensym)))
+    `(progn
+       (loop for ,n in (select ,select ,node)
+	    do
+	    (replace-node-with ,n (funcall,trans ,n)))
+       ,node)))
+
+(defun flatmap (fn node-or-nodes)
+  (flatten (mapcar fn (ensure-list node-or-nodes))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Resource
+;;;;;;;;;;;;;;;;;;;;;;;;
+(defun html-resource (input)
+  (chtml:parse input (cxml-dom:make-dom-builder)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Selector
+;;;;;;;;;;;;;;;;;;;;;;;;
+(defun select (selector node)
+  (query selector node))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Translator
+;;;;;;;;;;;;;;;;;;;;;;;;
 (defun set-attr (&rest atters)
   (lambda (node)
     (with-clone-node node node 
@@ -70,16 +121,6 @@
 			    finally (return node))
 			 (error "malformed atters")))))
 
-(defun get-attrs (node)
-  (loop for attr-node in (slot-value (dom:attributes node)
-                                 'cxml-dom::items)
-        collect
-        (cons
-          (dom:node-name attr-node)
-          (dom:value attr-node))))
-
-(defun get-attr (node name)
-  (get-attribute node name))
 
 (defun remove-attr (&rest atters)
   (lambda (node)
@@ -104,9 +145,6 @@
 			do
 			  (remove-css-class node cls))
 		     node)))
-
-(defun list->array (list)
-  (apply #'vector list))
 
 (defun content (&rest value)
   (lambda (node)
@@ -146,13 +184,6 @@
     (reduce (lambda (nodes f) (flatmap f nodes)) fns
 	    :initial-value (ensure-list node-or-nodes))))
 
-(defmacro apply-select-trans (node select trans)
-  (let ((n (gensym)))
-    `(progn
-       (loop for ,n in (select ,select ,node)
-	    do
-	    (replace-node-with ,n (funcall,trans ,n)))
-       ,node)))
 
 (defun before (&rest nodes)
   (lambda (node-or-nodes)
@@ -187,8 +218,6 @@
               (add-children node nnode))
         node)))
 
-(defun flatmap (fn node-or-nodes)
-  (flatten (mapcar fn (ensure-list node-or-nodes))))
 
 (defmacro clone-for (var lst &rest trans)
   (let ((node (gensym)))
@@ -211,26 +240,10 @@
 			  `(apply-select-trans ,nn ,select ,tr)))
 	       collect ,nn)))))))
                       
-(defmethod replace-node-with ((old-node dom:node) node-or-nodes)
-  (cond ((listp node-or-nodes)
-         (setf node-or-nodes (treat-node-list (buildnode::document-of old-node) (flatten node-or-nodes)))
-         (loop for nnode in node-or-nodes
-               do
-               (when (eq nnode old-node)
-                 (setf nnode (dom:clone-node nnode t)))
-               (dom:insert-before (dom:parent-node old-node) 
-                                  nnode
-                                  old-node))
-         (dom:remove-child (dom:parent-node old-node) old-node))
-        (t
-         (when (eq node-or-nodes old-node)
-           (setf node-or-nodes (dom:clone-node nnode t)))
-         (dom:replace-child (dom:parent-node old-node) node-or-nodes old-node))))
          
-(defun dom-to-html-string (dom)
-  (let ((*html-compatibility-mode* t))
-    (document-to-string dom)))
-
+;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Templating
+;;;;;;;;;;;;;;;;;;;;;;;;
 (defmacro deftemplate (name file-path args &rest select-body-pair)
   (let ((dom (gensym))
         (st (gensym)))
@@ -263,3 +276,27 @@
                                do
                                (replace-node-with ,ns (funcall ,code ,ns))))
                 collect ,n)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Scraping
+;;;;;;;;;;;;;;;;;;;;;;;;
+(defun get-attrs (node)
+  (loop for attr-node in (slot-value (dom:attributes node)
+                                 'cxml-dom::items)
+        collect
+        (cons
+          (dom:node-name attr-node)
+          (dom:value attr-node))))
+
+(defun get-attr (node name)
+  (get-attribute node name))
+
+(defun get-content (node)
+  (etypecase node
+   (rune-dom::text 
+     (dom:node-value node))
+   (rune-dom::element
+     (funcall (unwrap) node))
+   (rune-dom::document
+     (funcall (unwrap) node))))
+     
