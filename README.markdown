@@ -1,6 +1,6 @@
 # Caramel
 
-Enlive like template system in Common Lisp
+Enlive like css selector-based template system in Common Lisp
 
 ## Usage
 
