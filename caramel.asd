@@ -26,7 +26,7 @@
   :components ((:module "src"
                 :components
                 ((:file "caramel"))))
-  :description ""
+  :description "CSS selector-based template engine for Common Lisp"
   :long-description
   #.(with-open-file (stream (merge-pathnames
                              #p"README.markdown"
