@@ -2,6 +2,10 @@
 
 Enlive like css selector-based template system in Common Lisp
 
+## Installation
+
+    (ql:quickload :caramel)
+
 ## Usage
 
 ### html-resource
